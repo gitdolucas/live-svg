@@ -1,5 +1,7 @@
 # Live SVG – Signature animator
 
+![Live SVG](public/this-is-live-svg.svg)
+
 Draw your signature, set timing and easing per stroke, then export an animated SVG.
 
 Built with [Next.js](https://nextjs.org), React, and Tailwind CSS.
