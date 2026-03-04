@@ -34,7 +34,38 @@ export default function DrawCanvas({
   const svgRef = useRef<SVGSVGElement>(null);
   const isDrawingRef = useRef(false);
   const currentPointsRef = useRef<Point[]>([]);
+  const shiftKeyRef = useRef(false);
+  const liveStraightEndpointRef = useRef<Point | null>(null);
   const [livePoints, setLivePoints] = useState<Point[]>([]);
+
+  // Track Shift key so straight-line mode works even when canvas doesn't have focus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Shift") shiftKeyRef.current = true;
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Shift") {
+        if (
+          isDrawingRef.current &&
+          liveStraightEndpointRef.current != null
+        ) {
+          currentPointsRef.current = [
+            ...currentPointsRef.current,
+            liveStraightEndpointRef.current,
+          ];
+          setLivePoints([...currentPointsRef.current]);
+          liveStraightEndpointRef.current = null;
+        }
+        shiftKeyRef.current = false;
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   const getSVGCoords = useCallback(
     (e: PointerEvent): { x: number; y: number } => {
@@ -54,6 +85,7 @@ export default function DrawCanvas({
       e.preventDefault();
       svgRef.current?.setPointerCapture(e.pointerId);
       isDrawingRef.current = true;
+      liveStraightEndpointRef.current = null;
 
       const { x, y } = getSVGCoords(e.nativeEvent);
       const point: Point = {
@@ -82,14 +114,25 @@ export default function DrawCanvas({
         timestamp: performance.now(),
       };
 
-      currentPointsRef.current = [...currentPointsRef.current, point];
-      setLivePoints((prev) => [...prev, point]);
+      if (shiftKeyRef.current) {
+        liveStraightEndpointRef.current = point;
+        setLivePoints([...currentPointsRef.current, point]);
+      } else {
+        liveStraightEndpointRef.current = null;
+        currentPointsRef.current = [...currentPointsRef.current, point];
+        setLivePoints((prev) => [...prev, point]);
+      }
     },
     [getSVGCoords]
   );
 
   const finishStroke = useCallback(() => {
     if (!isDrawingRef.current) return;
+    const endpoint = liveStraightEndpointRef.current;
+    if (endpoint != null) {
+      currentPointsRef.current = [...currentPointsRef.current, endpoint];
+      liveStraightEndpointRef.current = null;
+    }
     isDrawingRef.current = false;
 
     const points = currentPointsRef.current;
@@ -220,6 +263,15 @@ export default function DrawCanvas({
             {smoothing ? "Smooth" : "Raw"}
           </span>
         </div>
+
+        <div className="h-4 w-px bg-border" />
+
+        <span
+          className="text-xs text-muted px-1"
+          title="Hold Shift while drawing to constrain the current segment to a straight line"
+        >
+          Shift: straight line
+        </span>
       </div>
 
       {/* Canvas */}

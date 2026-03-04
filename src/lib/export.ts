@@ -39,6 +39,7 @@ function buildPathElement(
     `    stroke-linejoin="round"`,
     `    stroke-dasharray="0 ${gap}"`,
     `    stroke-opacity="0"`,
+    `    style="stroke-dasharray:0 ${gap};stroke-opacity:0"`,
     `  >`,
     `    <animate`,
     `      attributeName="stroke-opacity"`,

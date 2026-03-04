@@ -63,7 +63,7 @@ export default function Preview({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col items-center gap-4">
       <div className="flex items-center gap-2">
         <button
           onClick={handlePlay}
@@ -82,8 +82,8 @@ export default function Preview({
       </div>
 
       <div
-        className="w-full border border-border rounded-xl overflow-hidden bg-surface relative"
-        style={{ aspectRatio: `${canvasWidth} / ${canvasHeight}` }}
+        className="border border-border rounded-xl overflow-hidden bg-surface relative"
+        style={{ width: canvasWidth, height: canvasHeight }}
       >
         {!hasStrokes ? (
           <div className="absolute inset-0 flex items-center justify-center">
