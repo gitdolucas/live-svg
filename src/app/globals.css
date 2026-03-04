@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --background: #faf8f5;
+  --surface: #f5f2ed;
+  --foreground: #1c1917;
+  --muted: #78716c;
+  --border: #e7e5e4;
+  --accent: #1a365d;
+  --accent-foreground: #f8fafc;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #141210;
+    --surface: #1c1917;
+    --foreground: #faf8f5;
+    --muted: #a8a29e;
+    --border: #292524;
+    --accent: #3b82c6;
+    --accent-foreground: #ffffff;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Subtle warm gradient atmosphere */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    165deg,
+    rgba(250, 248, 245, 0.95) 0%,
+    rgba(245, 242, 237, 0.98) 50%,
+    rgba(250, 248, 245, 0.95) 100%
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before {
+    background: linear-gradient(
+      165deg,
+      rgba(20, 18, 16, 0.97) 0%,
+      rgba(28, 25, 23, 0.98) 50%,
+      rgba(20, 18, 16, 0.97) 100%
+    );
+  }
+}
+
+/* Canvas workspace: paper-like surface with soft shadow */
+.canvas-workspace {
+  background: var(--surface);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  .canvas-workspace {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.2),
+      0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+@keyframes section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-section-reveal {
+  animation: section-reveal 0.4s ease-out forwards;
+}
+
+@keyframes preview-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.preview-svg-container {
+  animation: preview-fade-in 0.35s ease-out;
 }
