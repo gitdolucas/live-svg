@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Stroke, StrokeKeyframe, EasingPreset } from "@/lib/types";
 import DrawCanvas from "@/components/DrawCanvas";
 import Timeline from "@/components/Timeline";
@@ -21,7 +21,8 @@ export default function Home() {
   const [strokeColor, setStrokeColor] = useState("#000000");
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [smoothing, setSmoothing] = useState(true);
-  const [previewBackground, setPreviewBackground] = useState("");
+  const [background, setBackground] = useState("");
+  const [advancedMode, setAdvancedMode] = useState(false);
 
   const onStrokeComplete = useCallback((stroke: Stroke) => {
     setStrokes((prev) => [...prev, stroke]);
@@ -58,6 +59,17 @@ export default function Home() {
     setKeyframes(next);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        onUndo();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onUndo]);
+
   return (
     <div className="min-h-screen bg-background text-foreground relative z-10">
       <div className="mx-auto max-w-4xl px-4 py-10 flex flex-col gap-12">
@@ -72,6 +84,30 @@ export default function Home() {
             Draw your signature, set timing and easing, then export an animated
             SVG.
           </p>
+          <div className="mt-6 flex justify-center gap-0 rounded-lg border border-border bg-surface p-0.5">
+            <button
+              type="button"
+              onClick={() => setAdvancedMode(false)}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                !advancedMode
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              Simple
+            </button>
+            <button
+              type="button"
+              onClick={() => setAdvancedMode(true)}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                advancedMode
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              Advanced
+            </button>
+          </div>
           <div className="mt-6 h-px w-16 mx-auto bg-border" aria-hidden />
         </header>
 
@@ -125,6 +161,11 @@ export default function Home() {
                 onChange={(e) => setStrokeColor(e.target.value)}
                 className="w-24 rounded border border-border bg-background px-2 py-1.5 text-sm font-mono text-foreground focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
+              {!advancedMode && (
+                <span className="text-xs text-muted">
+                  This color is used in the exported file.
+                </span>
+              )}
             </label>
             <label className="flex items-center gap-2">
               <span className="text-sm text-muted">Width</span>
@@ -138,42 +179,45 @@ export default function Home() {
                 className="w-20 rounded border border-border bg-background px-2 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted">Path</span>
-              <button
-                type="button"
-                onClick={() => setSmoothing(!smoothing)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                  smoothing
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-surface border border-border text-muted hover:bg-border/50"
-                }`}
-              >
-                {smoothing ? "Smooth" : "Raw"}
-              </button>
-            </div>
+            {advancedMode && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted">Path</span>
+                <button
+                  type="button"
+                  onClick={() => setSmoothing(!smoothing)}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    smoothing
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-surface border border-border text-muted hover:bg-border/50"
+                  }`}
+                >
+                  {smoothing ? "Smooth" : "Raw"}
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Timeline */}
-        <section
-          className="flex flex-col gap-3 opacity-0 animate-section-reveal"
-          style={{
-            animationDelay: `${SECTION_DELAYS[3]}ms`,
-            animationFillMode: "forwards",
-          }}
-        >
-          <h2 className="text-sm font-semibold text-muted uppercase tracking-wide">
-            Timeline
-          </h2>
-          <Timeline
-            strokes={strokes}
-            keyframes={keyframes}
-            onKeyframesChange={onKeyframesChange}
-            smoothing={smoothing}
-            strokeColor={strokeColor}
-          />
-        </section>
+        {advancedMode && (
+          <section
+            className="flex flex-col gap-3 opacity-0 animate-section-reveal"
+            style={{
+              animationDelay: `${SECTION_DELAYS[3]}ms`,
+              animationFillMode: "forwards",
+            }}
+          >
+            <h2 className="text-sm font-semibold text-muted uppercase tracking-wide">
+              Timeline
+            </h2>
+            <Timeline
+              strokes={strokes}
+              keyframes={keyframes}
+              onKeyframesChange={onKeyframesChange}
+              smoothing={smoothing}
+              strokeColor={strokeColor}
+            />
+          </section>
+        )}
 
         {/* Preview */}
         <section
@@ -188,20 +232,33 @@ export default function Home() {
           </h2>
           <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm">
             <label className="flex items-center gap-2">
-              <span className="text-sm text-muted">Preview background</span>
+              <span className="text-sm text-muted">Background</span>
               <input
                 type="color"
-                value={previewBackground || "#ffffff"}
-                onChange={(e) => setPreviewBackground(e.target.value)}
+                value={background || "#ffffff"}
+                onChange={(e) => setBackground(e.target.value)}
                 className="h-8 w-10 rounded border border-border cursor-pointer bg-transparent"
               />
               <input
                 type="text"
-                value={previewBackground}
-                onChange={(e) => setPreviewBackground(e.target.value)}
+                value={background}
+                onChange={(e) => setBackground(e.target.value)}
                 placeholder="transparent"
                 className="w-28 rounded border border-border bg-background px-2 py-1 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
+              <button
+                type="button"
+                onClick={() => {
+                  setBackground("");
+                  onClear();
+                }}
+                className="text-muted hover:text-foreground text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent rounded"
+              >
+                Clear
+              </button>
+              <span className="text-xs text-muted">
+                Clear also resets the animation.
+              </span>
             </label>
           </div>
           <Preview
@@ -212,7 +269,7 @@ export default function Home() {
             smoothing={smoothing}
             canvasWidth={CANVAS_WIDTH}
             canvasHeight={CANVAS_HEIGHT}
-            background={previewBackground}
+            background={background}
           />
         </section>
 
@@ -235,6 +292,8 @@ export default function Home() {
             smoothing={smoothing}
             canvasWidth={CANVAS_WIDTH}
             canvasHeight={CANVAS_HEIGHT}
+            background={background}
+            mode={advancedMode ? "advanced" : "simple"}
           />
         </section>
       </div>

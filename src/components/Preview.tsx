@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Stroke, StrokeKeyframe } from "@/lib/types";
 import { generatePreviewSVG } from "@/lib/export";
 
@@ -30,6 +30,20 @@ export default function Preview({
 
   const hasStrokes = strokes.length > 0 && keyframes.length > 0;
 
+  useEffect(() => {
+    if (!svgContent || !hasStrokes) return;
+    const svg = generatePreviewSVG(strokes, keyframes, {
+      color: strokeColor,
+      width: strokeWidth,
+      smoothing,
+      canvasWidth,
+      canvasHeight,
+      background: background?.trim() || undefined,
+    });
+    setSvgContent(svg);
+    setAnimationKey((k) => k + 1);
+  }, [strokeColor, strokeWidth, background]);
+
   function handlePlay() {
     const svg = generatePreviewSVG(strokes, keyframes, {
       color: strokeColor,
@@ -47,8 +61,6 @@ export default function Preview({
     setSvgContent(null);
     setAnimationKey((k) => k + 1);
   }
-
-  const aspectRatio = canvasHeight / canvasWidth;
 
   return (
     <div className="flex flex-col gap-4">
@@ -70,28 +82,28 @@ export default function Preview({
       </div>
 
       <div
-        className="w-full border border-border rounded-xl overflow-hidden bg-surface flex items-center justify-center"
-        style={{ paddingBottom: `${aspectRatio * 100}%`, position: "relative" }}
+        className="w-full border border-border rounded-xl overflow-hidden bg-surface relative"
+        style={{ aspectRatio: `${canvasWidth} / ${canvasHeight}` }}
       >
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          {!hasStrokes ? (
+        {!hasStrokes ? (
+          <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-muted text-sm text-center px-4">
               Add strokes and configure timing first
             </p>
-          ) : svgContent ? (
-            <div
-              key={animationKey}
-              className="preview-svg-container w-full h-full"
-              dangerouslySetInnerHTML={{ __html: svgContent }}
-            />
-          ) : (
+          </div>
+        ) : svgContent ? (
+          <div
+            key={animationKey}
+            className="preview-svg-container absolute inset-0 w-full h-full"
+            dangerouslySetInnerHTML={{ __html: svgContent }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-muted text-sm text-center px-4">
               Press Play to preview the animation
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
