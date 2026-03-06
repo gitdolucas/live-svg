@@ -114,3 +114,13 @@ body::before {
   display: block;
   vertical-align: top;
 }
+
+/* Footer CTA arrow hover */
+.footer-cta-arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+a:hover .footer-cta-arrow,
+a:focus-visible .footer-cta-arrow {
+  transform: translateX(4px);
+}

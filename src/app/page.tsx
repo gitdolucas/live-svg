@@ -296,6 +296,43 @@ export default function Home() {
             mode={advancedMode ? "advanced" : "simple"}
           />
         </section>
+
+        <footer
+          className="mt-20 pb-14 opacity-0 animate-section-reveal"
+          style={{
+            animationDelay: "480ms",
+            animationFillMode: "forwards",
+          }}
+        >
+          <div className="relative rounded-2xl border border-[#292524] bg-[#1c1917] p-8 text-[#faf8f5] shadow-lg overflow-hidden">
+            {/* Subtle top highlight */}
+            <div
+              className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(168,162,158,0.35)] to-transparent"
+              aria-hidden
+            />
+            <div className="relative text-center max-w-xl mx-auto">
+              <p className="font-serif text-lg leading-relaxed">
+                Live SVG is a small tool to turn your hand-drawn signature into
+                an animated SVG—for social bios, sites, or wherever you want a
+                personal touch.
+              </p>
+              <p className="mt-3 text-sm text-[#a8a29e]">
+                Made by Lucas Lima. More projects, writing, and experiments:
+              </p>
+              <a
+                href="https://lucas-lima.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#faf8f5] px-5 py-2.5 text-sm font-medium text-[#1c1917] transition-all hover:bg-[#f5f2ed] hover:shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3b82c6]"
+              >
+                lucas-lima.com
+                <span className="footer-cta-arrow" aria-hidden>
+                  →
+                </span>
+              </a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
