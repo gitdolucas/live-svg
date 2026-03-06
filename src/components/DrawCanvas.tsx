@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import { track } from "@vercel/analytics";
 import { Stroke, Point } from "@/lib/types";
 import {
   buildRawPath,
@@ -36,6 +37,7 @@ export default function DrawCanvas({
   const currentPointsRef = useRef<Point[]>([]);
   const shiftKeyRef = useRef(false);
   const liveStraightEndpointRef = useRef<Point | null>(null);
+  const hasTrackedCanvasInteractionRef = useRef(false);
   const [livePoints, setLivePoints] = useState<Point[]>([]);
 
   // Track Shift key so straight-line mode works even when canvas doesn't have focus
@@ -83,6 +85,10 @@ export default function DrawCanvas({
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<SVGSVGElement>) => {
       e.preventDefault();
+      if (!hasTrackedCanvasInteractionRef.current) {
+        hasTrackedCanvasInteractionRef.current = true;
+        track("Canvas interaction");
+      }
       svgRef.current?.setPointerCapture(e.pointerId);
       isDrawingRef.current = true;
       liveStraightEndpointRef.current = null;
